@@ -11,6 +11,7 @@
   "devDependencies": {
     "crypto": "^1.0.1",
     "express": "^4.16.2",
-    "iconv-lite": "^0.4.19"
+    "iconv-lite": "^0.4.19",
+    "request": "^2.83.0"
   }
 }

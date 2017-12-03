@@ -1,7 +1,9 @@
 var express = require('express')
 var app = express();
 // var router = express.Router();
-var validateToken = require('./validateToken')
+var validateToken = require('./validate_token')
+// var test = require('./test')
+var getAccessToken = require('./config/get_access_token')
 // var wechat = require('./config/wechat');
 
 // 用于请求获取access_token
@@ -12,13 +14,15 @@ var validateToken = require('./validateToken')
 //     });
 // });
 
+
+console.log(validateToken)
 app.get('/', function (req, res) {
     res.send('GET request to the homepage');
 });
 
-
-console.log(validateToken)
 app.use('/vt', validateToken);
+// app.use('/testapi', test);
+app.get('/getaccesstoken', getAccessToken);
 
 var server = app.listen(3000, function () {
     var host = server.address().address;
