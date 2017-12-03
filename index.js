@@ -6,16 +6,6 @@ var validateToken = require('./validate_token')
 var getAccessToken = require('./config/get_access_token')
 // var wechat = require('./config/wechat');
 
-// 用于请求获取access_token
-// var wechatApp = new wechat(config);
-// router.get('/getAccessToken', function (req, res) {
-//     wechatApp.getAccessToken().then(function (data) {
-//         res.send(data);
-//     });
-// });
-
-
-console.log(validateToken)
 app.get('/', function (req, res) {
     res.send('GET request to the homepage');
 });
