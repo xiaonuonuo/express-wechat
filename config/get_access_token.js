@@ -2,92 +2,37 @@ const qs = require('querystring');
 const request = require('request');
 const fs = require('fs');
 
-//保存与更新
-// let wechatToken = {
-
-//     awaitToken: function (options) {
-//         let _this = this;
-//         return new Promise((resolve, reject) => {
-//             let currentTime = new Date().getTime();   // 获取当前的时间戳
-//             let accessTokenJson = _this.getToken()
-//             console.log(accessTokenJson)
-//             // 判断本地存储的access_token是否有效
-//             if (accessTokenJson.access_token === '' || accessTokenJson.expires_time < currentTime) {
-//                 request(options, function (err, res, body) {
-//                     var result = JSON.parse(body);
-//                     if (!err) {   // 成功
-//                         accessTokenJson.access_token = result.access_token;
-//                         accessTokenJson.expires_time = new Date().getTime() + (parseInt(result.expires_in) - 200) * 1000;
-//                         fs.writeFile('./access_token.json', JSON.stringify(accessTokenJson));  // 更新本地存储access_token和expires_time
-//                         resolve(accessTokenJson.access_token);   // 返回本地存储的access_token
-//                     } else {   // 失败
-//                         resolve(result);   // 将错误返回
-//                     }
-
-//                     // if (res) {
-//                     //     resolve(JSON.parse(body));
-//                     // } else {
-//                     //     reject(err);
-//                     // }
-//                 });
-//             } else {
-//                 resolve(accessTokenJson.access_token);   // 返回本地存储的access_token
-//             }
-//         })
-//     },
-
-//     getToken: function () {
-//         let _this = this
-//         fs.readFile(__dirname + '/access_token.json', { flag: 'r+', encoding: 'utf8' }, function (err, res) {
-//             if (!err) {
-//                 // that.setToken(res)
-//                 console.log(res)
-//                 return res
-//             } else {
-//                 console.log(err)
-//             }
-//         })
-//     },
-
-//     setToken: function (data,token) {
-//         let dataJson = JSON.parse(data)
-//         dataJson.access_token = token
-//         fs.writeFile(__dirname + '/access_token.json', JSON.stringify(dataJson), function (err) {
-//             if (!err) {
-//                 console.log('写入成功')
-//                 console.log(dataJson)
-//             } else {
-//                 console.log(err)
-//             }
-//         })
-//     }
-// }
-
-
-
-
+//
 let wechatToken = {
 
-    awaitToken: async function (options) {
-        let currentTime = new Date().getTime();   // 获取当前的时间戳
-        let accessTokenJson = await this.getToken()
-        console.log(accessTokenJson)
-        // 判断本地存储的access_token是否有效
-        if (accessTokenJson.access_token === '' || accessTokenJson.expires_time < currentTime) {
-            return await this.resquest(options);
-        } else {
-            return accessTokenJson.access_token;   // 返回本地存储的access_token
-        }
-    },
-    resquest: function (options) {
+    awaitToken: function (options) {
         return new Promise((resolve, reject) => {
-            request(options, function (err, res, body) {
+            let currentTime = new Date().getTime();   // 获取当前的时间戳
+            this.getToken().then((accessTokenJson) => {
+                // console.log(accessTokenJson)
+                // 判断本地存储的access_token是否有效
+                if (accessTokenJson.access_token === '' || accessTokenJson.expires_time < currentTime) {
+                    return this.resquest(options, accessTokenJson)
+                } else {
+                    resolve(accessTokenJson.access_token)   // 返回本地存储的access_token
+                }
+            }).then((data) => {
+                resolve(data)
+            }).catch(function (error) {
+                console.log('error: ' + error);
+            })
+        });  
+    },
+
+    resquest: function (options, accessTokenJson) {
+        var _this = this
+        return new Promise((resolve, reject) => {
+            request(options, async function (err, res, body) {
                 var result = JSON.parse(body);
                 if (!err) {   // 成功
-                    accessTokenJson.access_token = result.access_token;
                     accessTokenJson.expires_time = new Date().getTime() + (parseInt(result.expires_in) - 200) * 1000;
-                    fs.writeFile('./access_token.json', JSON.stringify(accessTokenJson));  // 更新本地存储access_token和expires_time
-                    resolve(accessTokenJson.access_token);   // 返回本地存储的access_token
+                    let isSuccess = await _this.setToken(accessTokenJson, result)   //更新本地存储access_token和expires_time
+                    resolve(accessTokenJson.access_token); 
                 } else {   // 失败
                     reject(err);
                 }
@@ -100,36 +45,39 @@ let wechatToken = {
             });
         });
     },
+    //token保存
     getToken: function () {
         return new Promise((resolve, reject) => {
             fs.readFile(__dirname + '/access_token.json', { flag: 'r+', encoding: 'utf8' }, (err, res) => {
                 if (!err) {
                     // this.setToken(res)
-                    console.log(res)
-                    resolve(res)
+                    // console.log(res)
+                    resolve(JSON.parse(res))
                 } else {
-                    reject(err);
+                    reject('err');
                 }
             })
         })
 
     },
 
-    setToken: function (data, token) {
-        var dataJson = JSON.parse(data)
-        dataJson.access_token = token
-        fs.writeFile(__dirname + '/access_token.json', JSON.stringify(dataJson), function (err) {
-            if (!err) {
-                console.log('写入成功')
-                console.log(dataJson)
-            } else {
-                console.log(err)
-            }
+    //token更新
+    setToken: function (data,result) {
+        return new Promise((resolve, reject) => {
+            data.access_token = result.access_token
+            data.expires_in = result.expires_in
+            fs.writeFile(__dirname + '/access_token.json', JSON.stringify(data), function (err) {
+                if (!err) {
+                    console.log('写入成功')
+                    resolve('success')
+                    // console.log(data)
+                } else {
+                    console.log(err)
+                }
+            })
         })
     }
 }
-
-
 
 getAccessToken = async function (req, res, next) {
     let config = {
@@ -154,8 +102,6 @@ getAccessToken = async function (req, res, next) {
         res.send('something err')
     }
 },
-
-
 
 
 // 获取微信access_token
