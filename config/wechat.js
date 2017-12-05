@@ -1,7 +1,7 @@
 /** 主要用于封装开发微信公众平台的所有方法  **/
-const https = require('https'),
+const https = require('https'), //
     util = require('util'),   // 提供常用函数的集合:格式化字符串、对象的序列化、实现对象继承等常用方法
-    fs = require('fs'),
+    fs = require('fs'), //node自带fs文件系统
     iconv = require("iconv-lite");   // 转换编码
 
 const accessTokenJson = require('./access_token');
