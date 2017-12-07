@@ -1,12 +1,12 @@
 var express = require('express'),   // 引入express模块
     crypto = require('crypto'),    // 引入加密模块
     config = require('./config/access_token.json'),   // 引入配置文件
-    tools = require('./config/tools'),   // 方法库
-    router = express.Router();
+    tools = require('./config/tools');   // 方法库
+ 
 
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+let validateToken = function (req, res, next) {
     var signature = req.query.signature,   // 微信加密签名，signature结合了开发者填写的token参数和请求中的timestamp参数、nonce参数。
         timestamp = req.query.timestamp,   // 时间戳
         nonce = req.query.nonce,           // 随机数
@@ -23,11 +23,10 @@ router.get('/', function (req, res, next) {
 
     //3）开发者获得加密后的字符串可与signature对比，标识该请求来源于微信
     if (resultCode === signature) {
-        tools.setToken({ 'signature': signature, 'timestamp': timestamp, 'nonce': nonce, 'echostr': echostr })
         res.send(echostr);
     } else {
         res.send('error!!!');
     }
-});
+}
 
-module.exports = router;
+module.exports = validateToken;

@@ -1,18 +1,8 @@
-var express = require('express')
-var app = express();
-// var router = express.Router();
-var validateToken = require('./validate_token')
-var test = require('./test')
-var getAccessToken = require('./config/get_access_token')
-// var wechat = require('./config/wechat');
+const express = require('express')
+const app = express();
+const route = require('./route')
 
-app.get('/', function (req, res) {
-    res.send('GET request to the homepage');
-});
-
-app.use('/vt', validateToken);
-app.use('/test', test);
-app.get('/getaccesstoken', getAccessToken);
+app.use('/', route)
 
 var server = app.listen(3000, function () {
     var host = server.address().address;
